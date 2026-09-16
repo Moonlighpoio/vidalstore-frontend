@@ -1,14 +1,19 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 
-import { MOCK_USER_LICENSES } from '../mocks/library.mock';
+import { environment } from '../../environments/environment';
 import { Purchase } from '../models/purchase.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LibraryService {
+  private readonly libraryUrl = `${environment.apiUrl}/v1/biblioteca`;
+
+  constructor(private readonly http: HttpClient) {}
+
   getUserLibrary(): Observable<Purchase[]> {
-    return of(MOCK_USER_LICENSES);
+    return this.http.get<Purchase[]>(this.libraryUrl);
   }
 }
