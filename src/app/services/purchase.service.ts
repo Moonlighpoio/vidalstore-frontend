@@ -1,37 +1,35 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 
-import { MOCK_PURCHASES } from '../mocks/purchase.mock';
+import { environment } from '../../environments/environment';
 import { Purchase } from '../models/purchase.model';
+
+export interface CreatePurchaseRequest {
+  gameId: string;
+  gameTitle: string;
+  amount: number;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class PurchaseService {
-  createPurchase(
-    gameId: string,
-    gameTitle: string,
-    amount: number,
-  ): Observable<Purchase> {
-    const licenseCode =
-      `LIC-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+  private readonly purchasesUrl = `${environment.apiUrl}/v1/compras`;
 
-    const newRecord: Purchase = {
-      id: `ord-${Date.now()}`,
+  constructor(private readonly http: HttpClient) {}
+
+  createPurchase(gameId: string, gameTitle: string, amount: number): Observable<Purchase> {
+    const request: CreatePurchaseRequest = {
       gameId,
       gameTitle,
-      userId: 'usr-demo-01',
-      timestamp: new Date(),
       amount,
-      licenseKey: licenseCode,
     };
 
-    MOCK_PURCHASES.push(newRecord);
-
-    return of(newRecord);
+    return this.http.post<Purchase>(this.purchasesUrl, request);
   }
 
   getPurchases(): Observable<Purchase[]> {
-    return of(MOCK_PURCHASES);
+    return this.http.get<Purchase[]>(this.purchasesUrl);
   }
 }
