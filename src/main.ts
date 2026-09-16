@@ -1,3 +1,4 @@
+import 'zone.js';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { Amplify } from 'aws-amplify';
 import { cognitoUserPoolsTokenProvider } from 'aws-amplify/auth/cognito';
@@ -19,7 +20,7 @@ const sessionStorageAdapter: KeyValueStorageInterface = {
   },
   clear: async (): Promise<void> => {
     sessionStorage.clear();
-  }
+  },
 };
 
 // 2. Configuración de recursos de Amplify
