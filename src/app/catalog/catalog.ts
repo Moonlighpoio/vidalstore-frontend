@@ -24,7 +24,7 @@ constructor() {
     });
 }
 
-onBuy(game: Game): void {
+    onBuy(game: Game): void {
     console.log('Selected game to purchase:', game);
-    }
+}
 }
