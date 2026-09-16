@@ -1,0 +1,33 @@
+<h2>Administrator Dashboard</h2>
+
+<div class="games-grid">
+    <article class="card">
+    <div class="card-body">
+    <h3>User Management</h3>
+    <p>Configure player accounts and verify Cognito group assignments.</p>
+    <button type="button" class="btn-danger" (click)="inspectSection('User Management')">
+        Manage Users
+    </button>
+    </div>
+    </article>
+
+    <article class="card">
+    <div class="card-body">
+    <h3>Sales Reports</h3>
+    <p>Audit system revenue, daily purchase orders, and transaction metrics.</p>
+    <button type="button" class="btn-danger" (click)="inspectSection('Sales Reports')">
+        View Reports
+    </button>
+    </div>
+    </article>
+
+    <article class="card">
+    <div class="card-body">
+    <h3>License Auditing</h3>
+    <p>Review active digital certificates and revoke illicit keys.</p>
+    <button type="button" class="btn-danger" (click)="inspectSection('License Auditing')">
+        Audit Licenses
+    </button>
+    </div>
+    </article>
+</div>
