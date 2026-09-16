@@ -1,5 +1,11 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
+import { Amplify } from 'aws-amplify';
 import { App } from './app/app';
+import { appConfig } from './app/app.config';
+import { amplifyConfig } from './app/core/auth/amplify.config';
 
-bootstrapApplication(App, appConfig).catch((err) => console.error(err));
+// Inicialización previa obligatoria
+Amplify.configure(amplifyConfig);
+
+bootstrapApplication(App, appConfig)
+  .catch((err) => console.error(err));
