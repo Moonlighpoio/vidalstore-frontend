@@ -1,14 +1,18 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnDestroy, signal } from '@angular/core';
+import { Subject, takeUntil } from 'rxjs';
 
 import { Purchase } from '../models/purchase.model';
 import { LibraryService } from '../services/library.service';
+import { LibraryRefreshService } from '../services/library-refresh.service';
 
 @Component({
   selector: 'app-library',
   templateUrl: './library.html',
 })
-export class Library {
+export class Library implements OnDestroy {
   private readonly libraryService = inject(LibraryService);
+  private readonly libraryRefreshService = inject(LibraryRefreshService);
+  private readonly destroy$ = new Subject<void>();
 
   protected readonly items = signal<Purchase[]>([]);
   protected readonly loading = signal(true);
@@ -16,6 +20,10 @@ export class Library {
 
   constructor() {
     this.loadLibrary();
+
+    this.libraryRefreshService.refresh$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.loadLibrary();
+    });
   }
 
   private loadLibrary(): void {
@@ -37,5 +45,10 @@ export class Library {
 
   launchGame(item: Purchase): void {
     alert(`Starting game executable for: ${item.gameTitle}`);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
