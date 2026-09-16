@@ -1,4 +1,7 @@
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -21,6 +24,7 @@ describe('PurchaseService', () => {
 
   afterEach(() => {
     httpTestingController.verify();
+    TestBed.resetTestingModule();
   });
 
   it('initializes the purchase service', () => {
@@ -38,11 +42,15 @@ describe('PurchaseService', () => {
       licenseKey: 'LIC-ADV-8492',
     };
 
-    service.createPurchase('1', 'Super Adventure', 29.99).subscribe((purchase) => {
-      expect(purchase).toEqual(expectedPurchase);
-    });
+    service
+      .createPurchase('1', 'Super Adventure', 29.99)
+      .subscribe((purchase) => {
+        expect(purchase).toEqual(expectedPurchase);
+      });
 
-    const request = httpTestingController.expectOne(`${environment.apiUrl}/v1/compras`);
+    const request = httpTestingController.expectOne(
+      `${environment.apiUrl}/v1/compras`,
+    );
 
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({
@@ -71,7 +79,9 @@ describe('PurchaseService', () => {
       expect(purchases).toEqual(expectedPurchases);
     });
 
-    const request = httpTestingController.expectOne(`${environment.apiUrl}/v1/compras`);
+    const request = httpTestingController.expectOne(
+      `${environment.apiUrl}/v1/compras`,
+    );
 
     expect(request.request.method).toBe('GET');
     request.flush(expectedPurchases);
@@ -80,7 +90,9 @@ describe('PurchaseService', () => {
   it('sends the selected game data in the purchase request', () => {
     service.createPurchase('3', 'Puzzle Master', 14.99).subscribe();
 
-    const request = httpTestingController.expectOne(`${environment.apiUrl}/v1/compras`);
+    const request = httpTestingController.expectOne(
+      `${environment.apiUrl}/v1/compras`,
+    );
 
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({
