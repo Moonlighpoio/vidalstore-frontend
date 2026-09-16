@@ -44,5 +44,6 @@ __screenshots__/
 Thumbs.db
 # Environment & secrets
 .env
-.env.local
+.env.*
+!.env.example
 src/environments/environment.development.ts
