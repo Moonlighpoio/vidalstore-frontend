@@ -1,0 +1,59 @@
+<div class="register-container">
+  <h2>{{ isConfirmationStep ? 'Confirmar Cuenta' : 'Crear Cuenta' }}</h2>
+
+  <!-- Alertas -->
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+
+  <!-- Paso 1: Formulario de Registro -->
+  <form *ngIf="!isConfirmationStep" [formGroup]="registerForm" (ngSubmit)="onSubmitRegister()">
+    <div class="form-group">
+      <label for="email">Correo electrónico</label>
+      <input id="email" type="email" formControlName="email" placeholder="usuario@correo.com" />
+      <small *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['required']" class="error-text">
+        El correo es obligatorio.
+      </small>
+      <small *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['email']" class="error-text">
+        Ingresa un correo electrónico válido.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Contraseña</label>
+      <input id="password" type="password" formControlName="password" placeholder="Mínimo 8 caracteres" />
+      <small *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['required']" class="error-text">
+        La contraseña es obligatoria.
+      </small>
+      <small *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['minlength']" class="error-text">
+        La contraseña debe tener al menos 8 caracteres.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="confirmPassword">Confirmar Contraseña</label>
+      <input id="confirmPassword" type="password" formControlName="confirmPassword" placeholder="Repite la contraseña" />
+      <small *ngIf="registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched" class="error-text">
+        Las contraseñas no coinciden.
+      </small>
+    </div>
+
+    <button type="submit" [disabled]="loading || registerForm.invalid">
+      {{ loading ? 'Registrando...' : 'Registrarse' }}
+    </button>
+  </form>
+
+  <!-- Paso 2: Confirmación con Código -->
+  <form *ngIf="isConfirmationStep" [formGroup]="confirmForm" (ngSubmit)="onSubmitConfirm()">
+    <div class="form-group">
+      <label for="code">Código de verificación</label>
+      <input id="code" type="text" formControlName="code" placeholder="Código recibido en tu correo" />
+      <small *ngIf="confirmForm.get('code')?.touched && confirmForm.get('code')?.errors?.['required']" class="error-text">
+        El código es obligatorio.
+      </small>
+    </div>
+
+    <button type="submit" [disabled]="loading || confirmForm.invalid">
+      {{ loading ? 'Verificando...' : 'Confirmar Cuenta' }}
+    </button>
+  </form>
+</div>
