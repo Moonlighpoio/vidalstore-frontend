@@ -1,5 +1,16 @@
 import { Injectable } from '@angular/core';
-import { signUp, confirmSignUp, type SignUpOutput, type ConfirmSignUpOutput } from 'aws-amplify/auth';
+import { 
+  signUp, 
+  confirmSignUp, 
+  signIn, 
+  signOut, 
+  fetchAuthSession, 
+  getCurrentUser,
+  type SignUpOutput, 
+  type ConfirmSignUpOutput,
+  type SignInOutput,
+  type AuthSession
+} from 'aws-amplify/auth';
 
 @Injectable({
   providedIn: 'root'
@@ -11,9 +22,7 @@ export class AuthService {
       username: email,
       password,
       options: {
-        userAttributes: {
-          email
-        }
+        userAttributes: { email }
       }
     });
   }
@@ -23,5 +32,38 @@ export class AuthService {
       username: email,
       confirmationCode: code
     });
+  }
+
+  async login(email: string, password: string): Promise<SignInOutput> {
+    return await signIn({
+      username: email,
+      password
+    });
+  }
+
+  async logout(): Promise<void> {
+    await signOut();
+  }
+
+  async getSession(): Promise<AuthSession> {
+    return await fetchAuthSession();
+  }
+
+  async isAuthenticated(): Promise<boolean> {
+    try {
+      const session = await fetchAuthSession();
+      return !!session.tokens?.accessToken;
+    } catch {
+      return false;
+    }
+  }
+
+  async getCurrentUsername(): Promise<string | null> {
+    try {
+      const user = await getCurrentUser();
+      return user.username;
+    } catch {
+      return null;
+    }
   }
 }
