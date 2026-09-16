@@ -5,7 +5,7 @@ export const amplifyConfig: ResourcesConfig = {
   Auth: {
     Cognito: {
       userPoolId: environment.cognito.userPoolId,
-      userPoolClientId: environment.cognito.appClientId,
+      userPoolClientId: environment.cognito.userPoolClientId,
       loginWith: {
         oauth: {
           domain: environment.cognito.domain.replace(/^https?:\/\//, ''),
