@@ -1,21 +1,24 @@
 <h2>My Game Library</h2>
 
 @if (loading()) {
-    <p class="muted">Loading user game licenses...</p>
+  <p class="muted">Loading user game licenses...</p>
+} @else if (errorMessage()) {
+  <p class="error-message">{{ errorMessage() }}</p>
 } @else {
-    <div class="library-container">
+  <div class="library-container">
     @for (item of items(); track item.id) {
-    <div class="list-item">
+      <div class="list-item">
         <div>
-        <h3>{{ item.gameTitle }}</h3>
-        <p class="muted">License Key: <code>{{ item.licenseKey }}</code></p>
+          <h3>{{ item.gameTitle }}</h3>
+          <p class="muted">
+            License Key: <code>{{ item.licenseKey }}</code>
+          </p>
         </div>
-        <button type="button" class="btn-success" (click)="launchGame(item)">
-        Launch Game
-        </button>
-    </div>
+
+        <button type="button" class="btn-success" (click)="launchGame(item)">Launch Game</button>
+      </div>
     } @empty {
-    <p class="muted">No licenses found. Acquire games from the catalog.</p>
+      <p class="muted">No licenses found. Acquire games from the catalog.</p>
     }
-    </div>
+  </div>
 }
