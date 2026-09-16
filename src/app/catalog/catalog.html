@@ -1,0 +1,26 @@
+<h2>Game Catalog</h2>
+
+@if (loading()) {
+    <p class="muted">Loading available catalog games...</p>
+} @else {
+    <div class="games-grid">
+    @for (game of games(); track game.id) {
+    <article class="card">
+        <img [src]="game.imageUrl" [alt]="game.title" class="card-media" />
+        <div class="card-body">
+        <span class="badge">{{ game.category }}</span>
+        <h3>{{ game.title }}</h3>
+        <p>{{ game.description }}</p>
+        <div class="card-action">
+            <span class="price">$ {{ game.price }}</span>
+            <button type="button" class="btn-primary" (click)="onBuy(game)">
+            Buy Now
+            </button>
+        </div>
+        </div>
+    </article>
+    } @empty {
+    <p>No titles currently available.</p>
+    }
+</div>
+}
