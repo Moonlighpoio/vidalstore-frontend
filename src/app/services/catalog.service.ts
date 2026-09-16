@@ -1,18 +1,25 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
-import { MOCK_GAMES } from '../mocks/catalog.mock';
+import { environment } from '../../environments/environment';
 import { Game } from '../models/game.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CatalogService {
+  private readonly catalogUrl = `${environment.apiUrl}/v1/catalogo`;
+
+  constructor(private readonly http: HttpClient) {}
+
   getCatalog(): Observable<Game[]> {
-    return of(MOCK_GAMES);
+    return this.http.get<Game[]>(this.catalogUrl);
   }
 
   getGameById(id: string): Observable<Game | undefined> {
-    return of(MOCK_GAMES.find((game) => game.id === id));
+    return this.getCatalog().pipe(
+      map((games) => games.find((game) => game.id === id)),
+    );
   }
 }
