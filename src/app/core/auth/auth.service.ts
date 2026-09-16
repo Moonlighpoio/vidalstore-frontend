@@ -66,4 +66,19 @@ export class AuthService {
       return null;
     }
   }
+
+  async getUserGroups(): Promise<string[]> {
+    try {
+      const session = await fetchAuthSession();
+      const payload = session.tokens?.accessToken?.payload || session.tokens?.idToken?.payload;
+      const groups = payload?.['cognito:groups'];
+
+      if (Array.isArray(groups)) {
+        return groups as string[];
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
 }
