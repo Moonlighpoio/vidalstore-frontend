@@ -3,9 +3,17 @@
   <nav>
     <a routerLink="/catalog" routerLinkActive="active">Catalog</a>
     <a routerLink="/library" routerLinkActive="active">My Library</a>
+
+    @if (isAdmin()) {
+      <a routerLink="/admin" routerLinkActive="active">Admin Panel</a>
+    }
   </nav>
 </header>
 
 <main>
   <router-outlet />
 </main>
+
+<footer>
+  <p class="muted">VidalStore Digital Platform</p>
+</footer>
