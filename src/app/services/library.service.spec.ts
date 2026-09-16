@@ -1,4 +1,7 @@
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -21,6 +24,7 @@ describe('LibraryService', () => {
 
   afterEach(() => {
     httpTestingController.verify();
+    TestBed.resetTestingModule();
   });
 
   it('initializes the library service', () => {
@@ -44,7 +48,9 @@ describe('LibraryService', () => {
       expect(library).toEqual(expectedLibrary);
     });
 
-    const request = httpTestingController.expectOne(`${environment.apiUrl}/v1/biblioteca`);
+    const request = httpTestingController.expectOne(
+      `${environment.apiUrl}/v1/biblioteca`,
+    );
 
     expect(request.request.method).toBe('GET');
     request.flush(expectedLibrary);
@@ -55,7 +61,9 @@ describe('LibraryService', () => {
       expect(library).toEqual([]);
     });
 
-    const request = httpTestingController.expectOne(`${environment.apiUrl}/v1/biblioteca`);
+    const request = httpTestingController.expectOne(
+      `${environment.apiUrl}/v1/biblioteca`,
+    );
 
     expect(request.request.method).toBe('GET');
     request.flush([]);

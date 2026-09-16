@@ -3,7 +3,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { environment } from '../../environments/environment';
 import { Game } from '../models/game.model';
@@ -24,6 +24,7 @@ describe('CatalogService', () => {
 
   afterEach(() => {
     httpTestingController.verify();
+    TestBed.resetTestingModule();
   });
 
   it('initializes the catalog service', () => {
