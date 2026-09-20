@@ -8,8 +8,10 @@ import { App } from './app/app';
 import { appConfig } from './app/app.config';
 import { configureAmplify } from './app/core/auth/amplify.config';
 
+// Amplify debe configurarse antes de iniciar Angular.
 configureAmplify();
 
+// Requisito EP1: los tokens viven en sessionStorage.
 cognitoUserPoolsTokenProvider.setKeyValueStorage(sessionStorage);
 
 bootstrapApplication(App, appConfig).catch((err) => {
