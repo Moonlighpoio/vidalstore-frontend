@@ -1,48 +1,16 @@
-<div class="login-container">
-  <h2>Iniciar Sesión</h2>
-  
-  <form (ngSubmit)="loginConPassword()">
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input 
-        type="email" 
-        id="email" 
-        [(ngModel)]="email" 
-        name="email" 
-        required
-        placeholder="tu@email.com"
-      />
-    </div>
+<section class="login-container" aria-live="polite">
+  <div class="login-card">
+    <h1>Redirigiendo a VidalStore</h1>
 
-    <div class="form-group">
-      <label for="password">Contraseña</label>
-      <input 
-        type="password" 
-        id="password" 
-        [(ngModel)]="password" 
-        name="password" 
-        required
-        placeholder="••••••••"
-      />
-    </div>
+    @if (!errorMessage) {
+      <p>Serás redirigido al inicio de sesión seguro de Cognito.</p>
+      <p>Espera un momento...</p>
+    } @else {
+      <p class="error-message">{{ errorMessage }}</p>
 
-    <button type="submit" class="btn-primary">
-      Iniciar Sesión
-    </button>
-  </form>
-
-  <div class="divider">
-    <span>o</span>
+      <button type="button" (click)="ngOnInit()">
+        Reintentar redirección
+      </button>
+    }
   </div>
-
-  <button (click)="onSubmit()" class="btn-secondary">
-    Iniciar con AWS Cognito
-  </button>
-
-  <div class="register-link">
-    <p>
-      ¿No tienes cuenta? 
-      <a routerLink="/registro">Regístrate aquí</a>
-    </p>
-  </div>
-</div>
+</section>
