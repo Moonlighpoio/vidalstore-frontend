@@ -1,6 +1,7 @@
+import type { ResourcesConfig } from 'aws-amplify';
 import { environment } from '../../../environments/environment';
 
-export const cognitoAuthConfig = {
+export const cognitoAuthConfig: ResourcesConfig = {
   Auth: {
     Cognito: {
       userPoolId: environment.cognito.userPoolId,
@@ -11,9 +12,9 @@ export const cognitoAuthConfig = {
           scopes: environment.cognito.scopes,
           redirectSignIn: [environment.cognito.redirectSignIn],
           redirectSignOut: [environment.cognito.redirectSignOut],
-          responseType: 'code' as const
-        }
-      }
-    }
-  }
+          responseType: 'code',
+        },
+      },
+    },
+  },
 };

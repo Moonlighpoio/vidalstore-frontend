@@ -1,56 +1,35 @@
 import { Routes } from '@angular/router';
-
-import { Admin } from './admin/admin';
-import { Catalog } from './catalog/catalog';
-import { Library } from './library/library';
-
 import { authGuard } from './core/guards/auth.guard';
-import { roleGuard } from './core/guards/role.guard';
+import { CallbackComponent } from './core/auth/callback/callback';
 
 export const routes: Routes = [
   {
     path: '',
-    pathMatch: 'full',
     redirectTo: 'catalogo',
+    pathMatch: 'full',
   },
   {
     path: 'login',
-    loadComponent: () =>
-      import('./core/auth/login/login').then(
-        (module) => module.LoginComponent,
-      ),
+    loadComponent: () => import('./core/auth/login/login').then(m => m.LoginComponent),
   },
   {
-    path: 'register',
-    loadComponent: () =>
-      import('./core/auth/register/register').then(
-        (module) => module.RegisterComponent,
-      ),
+    path: 'callback',
+    component: CallbackComponent,
   },
   {
     path: 'catalogo',
-    component: Catalog,
+    loadComponent: () => import('./catalog/catalog').then(m => m.Catalog),
     canActivate: [authGuard],
   },
   {
     path: 'biblioteca',
-    component: Library,
+    loadComponent: () => import('./library/library').then(m => m.Library),
     canActivate: [authGuard],
   },
   {
     path: 'admin',
-    component: Admin,
-    canActivate: [authGuard, roleGuard],
-    data: {
-      roles: ['administradores'],
-    },
-  },
-  {
-    path: 'forbidden',
-    loadComponent: () =>
-      import('./shared/forbidden/forbidden').then(
-        (module) => module.ForbiddenComponent,
-      ),
+    loadComponent: () => import('./admin/admin').then(m => m.Admin),
+    canActivate: [authGuard],
   },
   {
     path: '**',
