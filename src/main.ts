@@ -1,33 +1,18 @@
-import 'zone.js';
-import { bootstrapApplication } from '@angular/platform-browser';
 import { Amplify } from 'aws-amplify';
 import { cognitoUserPoolsTokenProvider } from 'aws-amplify/auth/cognito';
-import { type KeyValueStorageInterface } from '@aws-amplify/core';
+import { sessionStorage } from 'aws-amplify/utils';
+import { bootstrapApplication } from '@angular/platform-browser';
 import { App } from './app/app';
 import { appConfig } from './app/app.config';
-import { amplifyConfig } from './app/core/auth/amplify.config';
+import { cognitoAuthConfig } from './app/core/auth/cognito.config';
 
-// 1. Adaptador asíncrono para sessionStorage compatible con Amplify v6
-const sessionStorageAdapter: KeyValueStorageInterface = {
-  setItem: async (key: string, value: string): Promise<void> => {
-    sessionStorage.setItem(key, value);
-  },
-  getItem: async (key: string): Promise<string | null> => {
-    return sessionStorage.getItem(key);
-  },
-  removeItem: async (key: string): Promise<void> => {
-    sessionStorage.removeItem(key);
-  },
-  clear: async (): Promise<void> => {
-    sessionStorage.clear();
-  },
-};
+// Configura Amplify con OAuth
+Amplify.configure(cognitoAuthConfig);
 
-// 2. Configuración de recursos de Amplify
-Amplify.configure(amplifyConfig);
+// Configura sessionStorage para los tokens (REQUERIDO POR LA EP1)
+cognitoUserPoolsTokenProvider.setKeyValueStorage(sessionStorage);
 
-// 3. Forzar almacenamiento de tokens en sessionStorage
-cognitoUserPoolsTokenProvider.setKeyValueStorage(sessionStorageAdapter);
+console.log('[Main] Amplify configurado con sessionStorage y OAuth');
 
 bootstrapApplication(App, appConfig)
-  .catch((err) => console.error(err));
+  .catch((err) => console.error('[Main] Error al bootstrap:', err));

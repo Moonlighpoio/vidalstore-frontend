@@ -1,61 +1,37 @@
-import {
-  HttpErrorResponse,
-  HttpInterceptorFn,
-} from '@angular/common/http';
-import { inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
+import { Observable, from } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 import { fetchAuthSession } from 'aws-amplify/auth';
-import {
-  catchError,
-  from,
-  switchMap,
-  throwError,
-} from 'rxjs';
 
-import { environment } from '../../../environments/environment';
-
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
-  const gatewayUrl = environment.apiUrl.replace(/\/+$/, '');
-
-  const isGatewayRequest = req.url.startsWith(gatewayUrl);
-
-  if (!isGatewayRequest) {
+export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<any> => {
+  const apiGatewayUrl = 'http://localhost:8080';
+  
+  console.log('[Interceptor] Petición a:', req.url);
+  
+  // Solo adjunta el token si la petición va al API Gateway
+  if (!req.url.startsWith(apiGatewayUrl)) {
+    console.log('[Interceptor] URL no whitelisteada, pasando sin token');
     return next(req);
   }
 
   return from(fetchAuthSession()).pipe(
-    switchMap((session) => {
-      const accessToken = session.tokens?.accessToken?.toString();
+    mergeMap((session) => {
+      const accessToken = session.tokens?.accessToken.toString();
 
-      if (!accessToken) {
-        return next(req);
-      }
-
-      const authReq = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      return next(authReq);
-    }),
-    catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
-        sessionStorage.clear();
-
-        void router.navigate(['/login'], {
-          queryParams: {
-            sessionExpired: 'true',
+      if (accessToken) {
+        console.log('[Interceptor] Token encontrado, adjuntando a la petición...');
+        
+        const authReq = req.clone({
+          setHeaders: {
+            Authorization: `Bearer ${accessToken}`,
           },
         });
+        return next(authReq);
+      } else {
+        console.log('[Interceptor] No hay token, pasando sin Authorization header');
       }
 
-      if (error.status === 403) {
-        void router.navigate(['/forbidden']);
-      }
-
-      return throwError(() => error);
-    }),
+      return next(req);
+    })
   );
 };

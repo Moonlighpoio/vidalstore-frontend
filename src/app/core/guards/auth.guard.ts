@@ -1,17 +1,27 @@
 import { CanActivateFn, Router } from '@angular/router';
+import { fetchAuthSession, signInWithRedirect } from 'aws-amplify/auth';
 import { inject } from '@angular/core';
-import { AuthService } from '../auth/auth.service';
 
-export const authGuard: CanActivateFn = async (route, state) => {
-  const authService = inject(AuthService);
+export const authGuard: CanActivateFn = async () => {
   const router = inject(Router);
 
-  const isAuthenticated = await authService.isAuthenticated();
-
-  if (isAuthenticated) {
-    return true;
+  try {
+    console.log('[AuthGuard] Verificando sesión...');
+    
+    const session = await fetchAuthSession();
+    
+    if (session.tokens) {
+      console.log('[AuthGuard] Usuario autenticado, permitiendo acceso...');
+      return true;  // Usuario autenticado
+    } else {
+      console.log('[AuthGuard] No hay sesión, redirigiendo a Cognito...');
+      // No hay sesión, redirige a Cognito
+      await signInWithRedirect();
+      return false;
+    }
+  } catch (error) {
+    console.error('[AuthGuard] Error en auth guard:', error);
+    await signInWithRedirect();
+    return false;
   }
-
-  // Redirige al login guardando la URL a la que intentaba acceder
-  return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
 };
