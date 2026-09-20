@@ -1,46 +1,24 @@
-import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';  // ← Agrega este import
+import { Component, OnInit } from '@angular/core';
 import { signInWithRedirect } from 'aws-amplify/auth';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, RouterLink],  // ← Agrega FormsModule aquí
+  imports: [],
   templateUrl: './login.html',
-  styleUrls: ['./login.css'],
+  styleUrl: './login.css',
 })
-export class LoginComponent {
-  email = '';
-  password = '';
+export class LoginComponent implements OnInit {
+  errorMessage = '';
 
-  constructor(private router: Router) {}
-
-  async onSubmit() {
-    console.log('[Login] Iniciando login con redirect a Cognito...');
-    
+  async ngOnInit(): Promise<void> {
     try {
       await signInWithRedirect();
     } catch (error) {
-      console.error('[Login] Error en signInWithRedirect:', error);
-      alert('Error al iniciar sesión. Por favor intenta nuevamente.');
-    }
-  }
+      console.error('[Login] No fue posible redirigir a Cognito:', error);
 
-  async loginConPassword() {
-    console.log('[Login] Iniciando login con email/password...');
-    
-    try {
-      const { signIn } = await import('aws-amplify/auth');
-      await signIn({
-        username: this.email,
-        password: this.password,
-      });
-      console.log('[Login] Login exitoso, redirigiendo al catálogo...');
-      this.router.navigate(['/catalogo']);
-    } catch (error) {
-      console.error('[Login] Error en signIn:', error);
-      alert('Credenciales inválidas. Por favor verifica tu email y contraseña.');
+      this.errorMessage =
+        'No fue posible abrir el inicio de sesión de Cognito. Revisa la configuración del dominio, App Client y callback URL.';
     }
   }
 }
