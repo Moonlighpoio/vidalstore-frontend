@@ -7,6 +7,7 @@ import { LibraryRefreshService } from '../services/library-refresh.service';
 
 @Component({
   selector: 'app-library',
+  standalone: true,
   templateUrl: './library.html',
 })
 export class Library implements OnDestroy {

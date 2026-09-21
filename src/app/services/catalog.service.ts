@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { Game } from '../models/game.model';
+import { Game, GamePayload } from '../models/game.model';
 
 @Injectable({
   providedIn: 'root',
@@ -21,5 +21,13 @@ export class CatalogService {
     return this.getCatalog().pipe(
       map((games) => games.find((game) => game.id === id)),
     );
+  }
+
+  createGame(payload: GamePayload): Observable<Game> {
+    return this.http.post<Game>(this.catalogUrl, payload);
+  }
+
+  updateGame(id: string, payload: GamePayload): Observable<Game> {
+    return this.http.put<Game>(`${this.catalogUrl}/${id}`, payload);
   }
 }

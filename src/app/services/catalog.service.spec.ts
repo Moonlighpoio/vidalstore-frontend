@@ -6,7 +6,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { environment } from '../../environments/environment';
-import { Game } from '../models/game.model';
+import { Game, GamePayload } from '../models/game.model';
 import { CatalogService } from './catalog.service';
 
 describe('CatalogService', () => {
@@ -97,5 +97,53 @@ describe('CatalogService', () => {
     );
 
     request.flush(expectedGames);
+  });
+
+  it('creates a game via POST to the API Gateway', () => {
+    const payload: GamePayload = {
+      nombre: 'Nuevo Título',
+      descripcion: 'Una aventura épica.',
+      imagen: 'https://example.com/nuevo.jpg',
+    };
+    const created: Game = {
+      id: '99',
+      title: 'Nuevo Título',
+      description: 'Una aventura épica.',
+      imageUrl: 'https://example.com/nuevo.jpg',
+    };
+
+    service.createGame(payload).subscribe((game) => {
+      expect(game).toEqual(created);
+    });
+
+    const request = httpTestingController.expectOne(
+      `${environment.apiUrl}/v1/catalogo`,
+    );
+
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(payload);
+    request.flush(created);
+  });
+
+  it('updates a game via PUT to the API Gateway', () => {
+    const payload: GamePayload = {
+      nombre: 'Título Editado',
+    };
+    const updated: Game = {
+      id: '1',
+      title: 'Título Editado',
+    };
+
+    service.updateGame('1', payload).subscribe((game) => {
+      expect(game).toEqual(updated);
+    });
+
+    const request = httpTestingController.expectOne(
+      `${environment.apiUrl}/v1/catalogo/1`,
+    );
+
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual(payload);
+    request.flush(updated);
   });
 });

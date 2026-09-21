@@ -1,33 +1,89 @@
 <h2>Administrator Dashboard</h2>
 
-<div class="games-grid">
-    <article class="card">
-    <div class="card-body">
-    <h3>User Management</h3>
-    <p>Configure player accounts and verify Cognito group assignments.</p>
-    <button type="button" class="btn-danger" (click)="inspectSection('User Management')">
-        Manage Users
-    </button>
-    </div>
-    </article>
+@if (errorMessage()) {
+  <p class="error-message">{{ errorMessage() }}</p>
+}
 
-    <article class="card">
-    <div class="card-body">
-    <h3>Sales Reports</h3>
-    <p>Audit system revenue, daily purchase orders, and transaction metrics.</p>
-    <button type="button" class="btn-danger" (click)="inspectSection('Sales Reports')">
-        View Reports
-    </button>
-    </div>
-    </article>
+@if (loading()) {
+  <p class="muted">Cargando datos administrativos...</p>
+}
 
-    <article class="card">
-    <div class="card-body">
-    <h3>License Auditing</h3>
-    <p>Review active digital certificates and revoke illicit keys.</p>
-    <button type="button" class="btn-danger" (click)="inspectSection('License Auditing')">
-        Audit Licenses
-    </button>
-    </div>
-    </article>
-</div>
+<section class="admin-section">
+  <h3>Licencias emitidas</h3>
+
+  @if (licenses().length === 0) {
+    <p class="muted">No hay licencias emitidas todavía. Adquiera juegos desde el catálogo.</p>
+  } @else {
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Licencia</th>
+          <th>Usuario</th>
+          <th>Juego</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (license of licenses(); track license.id) {
+          <tr>
+            <td><code>{{ license.id }}</code></td>
+            <td>{{ license.userId }}</td>
+            <td>{{ license.gameId }}</td>
+            <td>{{ license.purchasedAt | date: 'short' }}</td>
+            <td>
+              @if (license.revoked) {
+                <span style="color: var(--danger); font-weight: 700;">REVOCADA</span>
+              } @else {
+                <span style="color: var(--success); font-weight: 700;">ACTIVA</span>
+              }
+            </td>
+            <td>
+              <button
+                type="button"
+                class="btn-danger"
+                [disabled]="license.revoked"
+                (click)="revoke(license)"
+              >
+                Revocar
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>
+
+<section class="admin-section">
+  <h3>Auditoría de revocaciones</h3>
+  <p class="muted">Registro de quién revocó cada licencia, a quién, qué juego y cuándo.</p>
+
+  @if (audit().length === 0) {
+    <p class="muted">No se han registrado revocaciones todavía.</p>
+  } @else {
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Licencia</th>
+          <th>Administrador (quién)</th>
+          <th>Usuario (a quién)</th>
+          <th>Juego</th>
+          <th>Fecha de revocación</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (record of audit(); track record.id) {
+          <tr>
+            <td><code>{{ record.licenseId }}</code></td>
+            <td>{{ record.revokedBy }}</td>
+            <td>{{ record.userId }}</td>
+            <td>{{ record.gameId }}</td>
+            <td>{{ record.revokedAt | date: 'short' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

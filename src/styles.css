@@ -157,3 +157,70 @@ button {
   padding: 0.75rem 1rem;
   margin: 1rem 0;
 }
+
+.editor-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.editor-form {
+  margin-bottom: 1.5rem;
+}
+
+.editor-form label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.editor-form input,
+.editor-form textarea {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.button-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.admin-section {
+  margin-bottom: 2rem;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  margin-top: 0.75rem;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.admin-table th {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  font-weight: 600;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}

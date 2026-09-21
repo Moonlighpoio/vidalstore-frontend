@@ -1,5 +1,47 @@
 <h2>Catálogo de Juegos</h2>
 
+@if (isEditor) {
+  <div class="editor-toolbar">
+    <button type="button" class="btn-primary" style="font-weight: bold; padding: 0.6rem 1.2rem;" (click)="openCreate()">
+      + PUBLICAR JUEGO
+    </button>
+  </div>
+}
+
+@if (formOpen) {
+  <section class="card editor-form">
+    <div class="card-body">
+      <h3>{{ editingGameId ? 'Editar juego' : 'Publicar nuevo juego' }}</h3>
+
+      <label>
+        Nombre *
+        <input type="text" [(ngModel)]="formNombre" name="nombre" placeholder="Nombre del juego" />
+      </label>
+
+      <label>
+        Descripción
+        <textarea [(ngModel)]="formDescripcion" name="descripcion" rows="3" placeholder="Descripción del juego"></textarea>
+      </label>
+
+      <label>
+        Imagen (URL)
+        <input type="url" [(ngModel)]="formImagen" name="imagen" placeholder="https://..." />
+      </label>
+
+      @if (formError) {
+        <p class="error-message">{{ formError }}</p>
+      }
+
+      <div class="card-action">
+        <button type="button" class="btn-danger" (click)="closeForm()">Cancelar</button>
+        <button type="button" class="btn-success" [disabled]="saving" (click)="guardarJuego()">
+          {{ saving ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </section>
+}
+
 @if (loading) {
   <p class="muted">Cargando juegos disponibles...</p>
 } @else if (errorMessage) {
@@ -22,15 +64,28 @@
           <div class="card-action">
             <span class="price">$ {{ game.price }}</span>
 
-            <button
-              type="button"
-              class="btn-primary"
-              style="font-weight: bold; background: #0070f3; padding: 0.6rem 1.2rem;"
-              [disabled]="purchasingGameId === game.id"
-              (click)="comprar(game)"
-            >
-              {{ purchasingGameId === game.id ? 'PROCESANDO...' : 'COMPRAR' }}
-            </button>
+            <div class="button-row">
+              @if (isEditor) {
+                <button
+                  type="button"
+                  class="btn-primary"
+                  style="background: #5b21b6; padding: 0.6rem 1.2rem;"
+                  (click)="openEdit(game)"
+                >
+                  EDITAR
+                </button>
+              }
+
+              <button
+                type="button"
+                class="btn-primary"
+                style="font-weight: bold; background: #0070f3; padding: 0.6rem 1.2rem;"
+                [disabled]="purchasingGameId === game.id"
+                (click)="comprar(game)"
+              >
+                {{ purchasingGameId === game.id ? 'PROCESANDO...' : 'COMPRAR' }}
+              </button>
+            </div>
           </div>
 
           <small style="display: block; font-size: 0.75rem; color: #888; margin-top: 0.5rem;">
