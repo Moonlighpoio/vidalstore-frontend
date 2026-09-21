@@ -1,18 +1,18 @@
-<h2>Game Catalog</h2>
+<h2>Catálogo de Juegos</h2>
 
-@if (loading()) {
-  <p class="muted">Loading available catalog games...</p>
-} @else if (errorMessage()) {
-  <p class="error-message">{{ errorMessage() }}</p>
+@if (loading) {
+  <p class="muted">Cargando juegos disponibles...</p>
+} @else if (errorMessage) {
+  <p class="error-message">{{ errorMessage }}</p>
 } @else {
-  @if (purchaseError()) {
-    <p class="error-message">{{ purchaseError() }}</p>
-  }
-
   <div class="games-grid">
-    @for (game of games(); track game.id) {
+    @for (game of games; track game.id) {
       <article class="card">
-        <img [src]="game.imageUrl" [alt]="game.title" class="card-media" />
+        <img
+          [src]="game.imageUrl"
+          [alt]="game.title"
+          class="card-media"
+        />
 
         <div class="card-body">
           <span class="badge">{{ game.category }}</span>
@@ -25,16 +25,21 @@
             <button
               type="button"
               class="btn-primary"
-              [disabled]="purchasingGameId() === game.id"
-              (click)="onBuy(game)"
+              style="font-weight: bold; background: #0070f3; padding: 0.6rem 1.2rem;"
+              [disabled]="purchasingGameId === game.id"
+              (click)="comprar(game)"
             >
-              {{ purchasingGameId() === game.id ? 'Processing...' : 'Buy Now' }}
+              {{ purchasingGameId === game.id ? 'PROCESANDO...' : 'COMPRAR' }}
             </button>
           </div>
+
+          <small style="display: block; font-size: 0.75rem; color: #888; margin-top: 0.5rem;">
+            * Al presionar COMPRAR se adquiere una licencia digital temporal revocable.
+          </small>
         </div>
       </article>
     } @empty {
-      <p>No titles currently available.</p>
+      <p class="muted">No hay títulos disponibles en este momento.</p>
     }
   </div>
 }
