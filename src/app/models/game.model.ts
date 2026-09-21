@@ -1,8 +1,11 @@
 export interface Game {
     id: string;
-    title: string;
-    description: string;
-    price: number;
-    category: string;
-    imageUrl: string;
+    title?: string;
+    name?: string;
+    description?: string;
+    short_description?: string;
+    imageUrl?: string;
+    thumbnail?: string;
+    coverUrl?: string;
+    price?: number;
 }
