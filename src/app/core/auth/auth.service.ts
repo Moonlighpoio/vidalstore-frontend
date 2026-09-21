@@ -12,6 +12,8 @@ import {
   type AuthSession
 } from 'aws-amplify/auth';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -42,7 +44,34 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
-    await signOut();
+    try {
+      await signOut();
+    } catch {
+      // El signOut con flujo OAuth puede fallar en algunos entornos;
+      // igual se limpia el estado local y se cierra la sesión SSO.
+    }
+
+    const prefix = 'CognitoIdentityServiceProvider.';
+
+    for (const key of Object.keys(sessionStorage)) {
+      if (key.startsWith(prefix)) {
+        sessionStorage.removeItem(key);
+      }
+    }
+
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith(prefix)) {
+        localStorage.removeItem(key);
+      }
+    }
+
+    const domain = environment.cognito.domain.replace('https://', '');
+    const clientId = environment.cognito.userPoolClientId;
+    const logoutUri = environment.cognito.redirectSignOut;
+
+    window.location.assign(
+      `https://${domain}/logout?client_id=${encodeURIComponent(clientId)}&logout_uri=${encodeURIComponent(logoutUri)}`,
+    );
   }
 
   async getSession(): Promise<AuthSession> {

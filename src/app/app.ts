@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
 
 @Component({
@@ -12,7 +12,6 @@ export class App {
   title = 'VidalStore';
 
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
 
   protected readonly isEditor = signal(false);
   protected readonly isAdmin = signal(false);
@@ -38,10 +37,6 @@ export class App {
   }
 
   protected async logout(): Promise<void> {
-    try {
-      await this.authService.logout();
-    } finally {
-      await this.router.navigate(['/login']);
-    }
+    await this.authService.logout();
   }
 }
