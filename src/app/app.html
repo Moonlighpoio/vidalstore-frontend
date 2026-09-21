@@ -1,13 +1,17 @@
 <header>
   <h1>VidalStore</h1>
   <nav>
-    <a routerLink="/catalog" routerLinkActive="active">Catalog</a>
-    <a routerLink="/library" routerLinkActive="active">My Library</a>
+    <a routerLink="/catalogo" routerLinkActive="active">Catalog</a>
+    <a routerLink="/biblioteca" routerLinkActive="active">My Library</a>
 
     @if (isAdmin()) {
       <a routerLink="/admin" routerLinkActive="active">Admin Panel</a>
     }
   </nav>
+
+  @if (isAuthenticated()) {
+    <button type="button" (click)="logout()">Cerrar sesión</button>
+  }
 </header>
 
 <main>

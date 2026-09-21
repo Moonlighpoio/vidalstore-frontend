@@ -1,6 +1,6 @@
-import { Component, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from './core/auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -11,8 +11,12 @@ import { fetchAuthSession } from 'aws-amplify/auth';
 export class App {
   title = 'VidalStore';
 
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
   protected readonly isEditor = signal(false);
   protected readonly isAdmin = signal(false);
+  protected readonly isAuthenticated = signal(false);
 
   constructor() {
     void this.loadUserRoles();
@@ -20,14 +24,24 @@ export class App {
 
   private async loadUserRoles(): Promise<void> {
     try {
-      const { tokens } = await fetchAuthSession();
-      const groups = (tokens?.accessToken?.payload['cognito:groups'] ?? []) as string[];
+      const authenticated = await this.authService.isAuthenticated();
+      this.isAuthenticated.set(authenticated);
 
+      const groups = await this.authService.getUserGroups();
       this.isEditor.set(groups.includes('editores'));
       this.isAdmin.set(groups.includes('administradores'));
     } catch {
-      this.isEditor.set(true);
-      this.isAdmin.set(true);
+      this.isAuthenticated.set(false);
+      this.isEditor.set(false);
+      this.isAdmin.set(false);
+    }
+  }
+
+  protected async logout(): Promise<void> {
+    try {
+      await this.authService.logout();
+    } finally {
+      await this.router.navigate(['/login']);
     }
   }
 }
