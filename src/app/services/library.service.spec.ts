@@ -32,14 +32,29 @@ describe('LibraryService', () => {
   });
 
   it('requests the user library from the API Gateway', () => {
+    const apiResponse = {
+      userId: 'usr-demo-01',
+      total: 1,
+      licenses: [
+        {
+          id: 'LIC-ADV-8492',
+          userId: 'usr-demo-01',
+          gameId: '1',
+          gameTitle: 'Super Adventure',
+          purchasedAt: '2026-09-01T10:00:00.000Z',
+          revoked: false,
+        },
+      ],
+    };
+
     const expectedLibrary: Purchase[] = [
       {
-        id: 'ord-101',
+        id: 'LIC-ADV-8492',
         gameId: '1',
         gameTitle: 'Super Adventure',
         userId: 'usr-demo-01',
         timestamp: new Date('2026-09-01T10:00:00Z'),
-        amount: 29.99,
+        amount: 0,
         licenseKey: 'LIC-ADV-8492',
       },
     ];
@@ -53,7 +68,7 @@ describe('LibraryService', () => {
     );
 
     expect(request.request.method).toBe('GET');
-    request.flush(expectedLibrary);
+    request.flush(apiResponse);
   });
 
   it('returns an empty library when the API returns no purchases', () => {
@@ -66,6 +81,6 @@ describe('LibraryService', () => {
     );
 
     expect(request.request.method).toBe('GET');
-    request.flush([]);
+    request.flush({ userId: 'usr-demo-01', licenses: [], total: 0 });
   });
 });

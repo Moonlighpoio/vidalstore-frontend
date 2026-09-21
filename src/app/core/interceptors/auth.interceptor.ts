@@ -1,37 +1,46 @@
-import { HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
-import { Observable, from } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { fetchAuthSession } from 'aws-amplify/auth';
+import { Observable, from, throwError } from 'rxjs';
+import { catchError, mergeMap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
-export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<any> => {
-  const apiGatewayUrl = 'http://localhost:8080';
-  
-  console.log('[Interceptor] Petición a:', req.url);
-  
-  // Solo adjunta el token si la petición va al API Gateway
+export const authInterceptor: HttpInterceptorFn = (
+  req: HttpRequest<unknown>,
+  next: HttpHandlerFn,
+): Observable<HttpEvent<unknown>> => {
+  const router = inject(Router);
+  const apiGatewayUrl = environment.apiUrl;
+
   if (!req.url.startsWith(apiGatewayUrl)) {
-    console.log('[Interceptor] URL no whitelisteada, pasando sin token');
     return next(req);
   }
 
   return from(fetchAuthSession()).pipe(
     mergeMap((session) => {
       const accessToken = session.tokens?.accessToken.toString();
+      const authReq = accessToken
+        ? req.clone({
+            setHeaders: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          })
+        : req;
 
-      if (accessToken) {
-        console.log('[Interceptor] Token encontrado, adjuntando a la petición...');
-        
-        const authReq = req.clone({
-          setHeaders: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        return next(authReq);
-      } else {
-        console.log('[Interceptor] No hay token, pasando sin Authorization header');
-      }
+      return next(authReq).pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 401) {
+            router.navigate(['/login'], {
+              queryParams: { sessionExpired: 'true' },
+            });
+          } else if (error.status === 403) {
+            router.navigate(['/forbidden']);
+          }
 
-      return next(req);
-    })
+          return throwError(() => error);
+        }),
+      );
+    }),
   );
 };

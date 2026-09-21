@@ -38,7 +38,6 @@ describe('CatalogService', () => {
         title: 'Super Adventure',
         description: 'An epic open-world exploration adventure.',
         price: 29.99,
-        category: 'Adventure',
         imageUrl: 'https://example.com/game.jpg',
       },
     ];
@@ -62,7 +61,6 @@ describe('CatalogService', () => {
         title: 'Super Adventure',
         description: 'An epic open-world exploration adventure.',
         price: 29.99,
-        category: 'Adventure',
         imageUrl: 'https://example.com/game.jpg',
       },
     ];
@@ -86,7 +84,6 @@ describe('CatalogService', () => {
         title: 'Super Adventure',
         description: 'An epic open-world exploration adventure.',
         price: 29.99,
-        category: 'Adventure',
         imageUrl: 'https://example.com/game.jpg',
       },
     ];
