@@ -1,46 +1,48 @@
-# VidalStore Frontend
+# VidalStore — Frontend
 
-Aplicación frontend de VidalStore construida con Angular. La aplicación implementa autenticación con AWS Cognito mediante AWS Amplify, protege las rutas privadas, agrega el token de acceso únicamente a las peticiones del API Gateway y consume los endpoints de catálogo, compras y biblioteca.
+Aplicación web de la plataforma **VidalStore** construida con **Angular**. Es la cara visible del proyecto: autentica al usuario contra **AWS Cognito** (Hosted UI con Authorization Code + PKCE), protege las rutas privadas, adjunta el access token únicamente hacia el **API Gateway** y consume los módulos de catálogo, compras, biblioteca y administración.
 
-> VidalStore vende licencias de uso de videojuegos. El botón visible para el usuario puede decir “Comprar”, pero técnicamente el backend crea una licencia asociada al usuario autenticado.
+VidalStore vende **licencias de uso de videojuegos digitales** (los botones dicen "Comprar", pero el backend crea una licencia asociada al usuario autenticado).
 
 ## Arquitectura
 
-El frontend participa en el siguiente flujo:
-
 ```text
-Navegador Angular
-      |
-      | Authorization: Bearer <access token>
-      v
-API Gateway - http://localhost:8080
-      |
-      v
-BFF y microservicios backend
+Navegador (Angular)  :4200
+      │  Authorization: Bearer <access token>
+      ▼
+API Gateway (NestJS) :8080
+      │
+      ▼
+BFF y microservicios backend (catálogo, biblioteca, licencias, auditoría)
 ```
 
-El navegador conoce solamente la URL del API Gateway. No llama directamente al BFF ni a los microservicios.
+El navegador solo conoce la URL del API Gateway. No llama directamente al BFF ni a los microservicios.
+
+## Funcionalidad
+
+- **Autenticación** con AWS Cognito: registro con confirmación por correo, inicio de sesión vía Hosted UI (Authorization Code + PKCE) y cierre de sesión robusto.
+- **Rutas protegidas**: `/catalogo`, `/biblioteca` y `/admin` (esta última solo para `administradores`).
+- **Interceptor de autenticación**: agrega `Authorization: Bearer <access token>` solo a las peticiones al API Gateway y maneja `401`/`403`.
+- **Catálogo**: exploración y búsqueda de juegos disponibles.
+- **Biblioteca**: listado de las licencias activas del usuario (se actualiza tras una compra).
+- **Admin**: publicar/editar juegos, listar y revocar licencias y consultar auditoría.
+- **Rutas de error**: redirección a `/forbidden` ante `403` y al login ante `401`.
 
 ## Tecnologías
 
-- Angular.
-- TypeScript.
-- AWS Amplify.
-- Amazon Cognito.
+- Angular (componentes standalone) + TypeScript.
+- AWS Amplify + Amazon Cognito (Hosted UI, OAuth con PKCE).
 - RxJS.
-- Vitest mediante el builder de pruebas de Angular.
+- Pruebas con el builder de Angular (Vitest) — `ng test`.
+- Tailwind (configuración PostCSS).
 
 ## Requisitos
 
-- Node.js compatible con la versión declarada por el proyecto.
-- npm.
-- Angular CLI disponible mediante los scripts del proyecto.
-- Un User Pool de Amazon Cognito configurado para la aplicación.
-- El repositorio backend ejecutándose en `http://localhost:8080`.
+- Node.js compatible con la versión declarada por el proyecto y npm.
+- Un user pool de Cognito configurado (dominio, app client, scopes y callbacks).
+- El API Gateway corriendo en `http://localhost:8080`.
 
 ## Instalación
-
-Clona el repositorio e instala las dependencias:
 
 ```bash
 git clone https://github.com/wsk4/vidalstore-frontend.git
@@ -48,192 +50,150 @@ cd vidalstore-frontend
 npm install
 ```
 
-No subas archivos `.env` con valores reales ni credenciales de AWS.
+No subas `.env` con valores reales ni credenciales de AWS.
 
 ## Configuración
 
-La aplicación obtiene su configuración de Cognito y del API Gateway desde variables de entorno. El script del proyecto genera la configuración que usa Angular.
-
-Crea un archivo `.env` local a partir del ejemplo disponible en el proyecto, sin agregarlo a Git:
+Crea un `.env` local a partir del ejemplo del proyecto:
 
 ```env
 API_URL=http://localhost:8080
-COGNITO_REGION=us-east-1
-COGNITO_USER_POOL_ID=your-user-pool-id
-COGNITO_USER_POOL_CLIENT_ID=your-public-app-client-id
-COGNITO_DOMAIN=your-cognito-domain
+
+REGION=us-east-1
+USER_POOL_ID=your-user-pool-id
+USER_POOL_CLIENT_ID=your-app-client-id
+COGNITO_DOMAIN=https://tu-dominio.auth.us-east-1.amazoncognito.com
+
+ISSUER=https://cognito-idp.us-east-1.amazonaws.com/your-user-pool-id
+JWKS_URI=https://cognito-idp.us-east-1.amazonaws.com/your-user-pool-id/.well-known/jwks.json
+
+RESOURCE_SERVER_ID=vidalstore
+SCOPE_CATALOGO_LEER=vidalstore/catalogo.leer
+SCOPE_CATALOGO_ESCRIBIR=vidalstore/catalogo.escribir
+SCOPE_BIBLIOTECA_LEER=vidalstore/biblioteca.leer
+
+REDIRECT_SIGN_IN=http://localhost:4200/callback
+REDIRECT_SIGN_OUT=http://localhost:4200
 ```
 
-Los nombres exactos de las variables deben coincidir con el script de generación de entorno y con la configuración existente del proyecto. Nunca incluyas contraseñas, client secrets, credenciales de AWS ni tokens reales.
-
-Genera la configuración:
+Genera la configuración de entorno que usa Angular:
 
 ```bash
 npm run generate:environment
 ```
 
-La URL base del frontend debe ser la única URL del API Gateway:
-
-```text
-http://localhost:8080
-```
-
-Los callbacks locales de Cognito utilizan la aplicación Angular:
+El script valida que existan todas las variables requeridas y escribe `src/environments/environment.development.ts`. Callbacks de Cognito:
 
 ```text
 http://localhost:4200/callback
 http://localhost:4200
 ```
 
-## Autenticación
+## Ejecución
 
-La aplicación usa Amazon Cognito y AWS Amplify con Authorization Code Flow con PKCE.
-
-El flujo general es:
-
-```text
-Usuario
-  -> Angular
-  -> Cognito Hosted UI
-  -> Authorization Code + PKCE
-  -> Angular callback
-  -> Tokens de Cognito
-  -> API Gateway
+```bash
+npm run generate:environment
+npm start
 ```
 
-### Almacenamiento del token
+La aplicación queda disponible en `http://localhost:4200`, con el backend en `http://localhost:8080`.
 
-Los tokens se almacenan explícitamente en `sessionStorage` mediante un adaptador compatible con Amplify.
+## Autenticación
 
-Esto reduce la persistencia del token al ciclo de vida de la pestaña. No elimina el riesgo de un script malicioso que se ejecute dentro del mismo origen; por eso no deben incorporarse scripts de terceros sin revisión.
+### Flujo
 
-Para comprobarlo en el navegador:
+```text
+Usuario → Angular → Cognito Hosted UI → Authorization Code + PKCE
+       → callback → tokens de Cognito → API Gateway
+```
 
-1. Inicia sesión.
-2. Abre DevTools.
-3. Ve a `Application`.
-4. Revisa `Session Storage`.
-5. Confirma que no existan tokens de autenticación en `Local Storage`.
+- `login` redirige con `signInWithRedirect` a la Hosted UI de Cognito.
+- `register` usa `signUp` + `confirmSignUp` (código de confirmación por correo).
+- `logout` cierra la sesión SSO y limpia los tokens de Amplify de `sessionStorage` y `localStorage`.
+
+### Almacenamiento de tokens
+
+Los tokens se guardan en `sessionStorage` mediante un adaptador compatible con Amplify. Esto limita la persistencia al ciclo de vida de la pestaña.
+
+Para verificarlo: `DevTools → Application → Session Storage` y confirmar que no hay tokens de autenticación en `Local Storage`.
 
 ### Interceptor
 
-`authInterceptor` realiza estas tareas:
+`authInterceptor`:
 
-- Comprueba si la petición apunta a `environment.apiUrl`.
-- Obtiene la sesión de Amplify.
-- Agrega `Authorization: Bearer <accessToken>` únicamente al API Gateway.
-- No envía tokens a APIs externas, assets ni URLs arbitrarias.
-- Limpia la sesión y redirige al login ante un `401`.
-- Redirige a `/forbidden` ante un `403`.
-- Propaga el error para que los servicios y componentes puedan manejarlo.
+- Solo adjunta `Authorization: Bearer <accessToken>` cuando la petición apunta a `environment.apiUrl` (el API Gateway).
+- Obtiene la sesión desde Amplify y agrega el token.
+- Nunca envía el token a APIs externas, assets ni URLs arbitrarias.
+- Ante `401`: limpia la sesión y redirige al login.
+- Ante `403`: redirige a `/forbidden`.
+- Propaga el error para que servicios y componentes puedan reaccionar.
 
 ### Guards
 
-Las rutas privadas están protegidas por `authGuard`:
+| Ruta | Guard | Requisito |
+|---|---|---|
+| `/catalogo` | `authGuard` | Sesión válida |
+| `/biblioteca` | `authGuard` | Sesión válida |
+| `/admin` | `authGuard` + `roleGuard` | Grupo `administradores` |
 
-- `/catalogo`.
-- `/biblioteca`.
-- `/admin`.
+Los guards controlan navegación y UX; la autorización real siempre vive en el backend.
 
-La ruta `/admin` utiliza además `roleGuard` y requiere el grupo Cognito `administradores`.
+### Grupos de Cognito
 
-Los guards frontend controlan navegación y experiencia de usuario. La autorización real debe permanecer en el backend, BFF y microservicios.
+Se leen desde el claim `cognito:groups` del token:
 
-### Grupos Cognito
-
-Los grupos se leen desde el claim `cognito:groups` del token para controlar la interfaz:
-
-- `jugadores`.
-- `editores`.
-- `administradores`.
+- `jugadores` — navegan catálogo y biblioteca, compran.
+- `editores` — publican y editan juegos.
+- `administradores` — gestionan catálogo, licencias y auditoría.
 
 Ocultar una vista o botón no reemplaza la autorización del servidor.
 
 ## Endpoints consumidos
 
-Todos los endpoints se consumen a través de `environment.apiUrl`.
+Todos a través de `environment.apiUrl`:
 
 | Método | Ruta | Uso |
 |---|---|---|
-| GET | `/v1/catalogo` | Obtener el catálogo autenticado |
-| POST | `/v1/compras` | Crear una licencia para el usuario autenticado |
-| GET | `/v1/compras` | Consultar compras |
-| GET | `/v1/biblioteca` | Obtener la biblioteca del usuario autenticado |
-
-La biblioteca no recibe un `userId` desde el frontend. El backend debe resolver al usuario usando el claim `sub` del token.
+| `GET` | `/v1/catalogo` | Obtener el catálogo autenticado. |
+| `POST` | `/v1/compras` | Crear una licencia para el usuario autenticado (body: `{"gameId": "..."}`). |
+| `GET` | `/v1/biblioteca` | Obtener la biblioteca del usuario autenticado (la resuelve el `sub` del token). |
+| `GET` | `/v1/licencias` | Listar licencias (admin). |
+| `DELETE` | `/v1/licencias/:id` | Revocar una licencia (admin). |
+| `GET` | `/v1/auditoria` | Consultar auditoría (admin). |
 
 ## Estructura principal
 
 ```text
 src/
 ├── app/
-│   ├── catalog/
-│   ├── library/
-│   ├── admin/
+│   ├── admin/                    # panel admin (juegos, licencias, auditoría)
+│   ├── catalog/                  # catálogo y búsqueda
 │   ├── core/
-│   │   ├── auth/
-│   │   ├── guards/
-│   │   └── interceptors/
-│   ├── models/
-│   └── services/
-├── environments/
+│   │   ├── auth/                 # Amplify, AuthService, login, registrarse, callback
+│   │   ├── guards/               # authGuard, roleGuard
+│   │   └── interceptors/         # authInterceptor
+│   ├── library/                  # biblioteca del usuario
+│   ├── models/                   # Game, Purchase, ...
+│   ├── services/                 # catalog, library, purchase, admin, refresh
+│   ├── shared/                   # catalogo-demo, forbidden
+│   ├── app.routes.ts
+│   ├── app.ts
+├── environments/                 # environment.development.ts (generado)
 ├── main.ts
 └── styles.css
+
+scripts/generate-environment.mjs  # genera el environment desde .env
 ```
-
-## Ejecución local
-
-Genera el entorno y levanta Angular:
-
-```bash
-npm run generate:environment
-npm start
-```
-
-La aplicación estará disponible normalmente en:
-
-```text
-http://localhost:4200
-```
-
-El backend debe estar disponible en:
-
-```text
-http://localhost:8080
-```
-
-## Scripts
-
-```bash
-npm install
-npm run generate:environment
-npm start
-npm run build
-npm test
-```
-
-`npm test` inicia las pruebas en modo watch. Presiona `q` para salir.
 
 ## Pruebas
 
-Las pruebas cubren:
-
-- Catálogo y búsqueda de juegos.
-- Biblioteca del usuario.
-- Creación y consulta de compras.
-- Interceptor de autenticación.
-- Redirección ante `401`.
-- Redirección ante `403`.
-- Restricción del header `Authorization` al API Gateway.
-- Rutas y aplicación principal.
-
-Ejecuta:
-
 ```bash
 npm test
 ```
 
-Antes de abrir un Pull Request ejecuta:
+Las pruebas cubren catálogo y búsqueda, biblioteca, compras, interceptor de autenticación, redirección ante `401`/`403`, restricción del header `Authorization` al API Gateway y rutas de la aplicación. `ng test` corre en modo watch; presiona `q` para salir.
+
+Antes de abrir un Pull Request:
 
 ```bash
 git diff --check
@@ -244,66 +204,38 @@ npm test
 
 ## Seguridad
 
-- No se versionan `.env` con valores reales.
-- No se versionan credenciales de AWS.
-- No se versionan contraseñas de usuarios.
-- No se guardan tokens en el código fuente.
-- Los tokens se guardan en `sessionStorage`.
+- No se versionan `.env` con valores reales ni credenciales de AWS.
+- Los tokens se guardan en `sessionStorage`, no en `localStorage`.
 - El interceptor no envía tokens a APIs externas.
-- La autorización definitiva pertenece al backend.
-- El frontend no debe llamar directamente a microservicios.
+- La autorización definitiva pertenece al backend (BFF y microservicios).
+- El frontend no llama directo a microservicios: siempre a través del Gateway.
 
-Revisa el repositorio antes de entregarlo:
+Revisa posibles filtraciones antes de entregar:
 
 ```bash
 git grep -iE 'password|secret|token|cookie'
 ```
 
-Las coincidencias esperadas pueden corresponder a nombres de formularios, documentación, tests o APIs; revisa manualmente que no contengan valores reales.
+Las coincidencias pueden corresponder a formularios, documentación o tests; verifica manualmente que no haya valores reales.
+
+## Scripts
+
+```bash
+npm install
+npm run generate:environment   # genera src/environments/environment.development.ts
+npm start                      # genera entorno y sirve con ng serve
+npm run build                  # genera entorno y compila
+npm test                       # pruebas (watch)
+```
 
 ## Flujo de ramas
 
-Usa el siguiente flujo:
-
 ```text
-main <- dev <- feature/<nombre-descriptivo>
+main ← dev ← feature/<nombre-descriptivo>
 ```
 
-Crea las ramas desde `dev`:
-
-```bash
-git checkout dev
-git pull origin dev
-git checkout -b feature/nombre-descriptivo
-```
-
-Usa commits descriptivos, por ejemplo:
-
-```text
-feat(api-client): integrate catalog endpoint through API Gateway
-feat(auth): handle unauthorized API responses
-docs(security): update frontend authentication checklist
-```
-
-No trabajes directamente sobre `main` ni `dev`.
-
-## Evidencia para la defensa
-
-La demo frontend debe mostrar:
-
-1. Registro e inicio de sesión con Cognito.
-2. Flujo Authorization Code con PKCE en el navegador.
-3. Token almacenado en `sessionStorage`.
-4. Acceso permitido a `/catalogo` y `/biblioteca` con sesión válida.
-5. Redirección al login al intentar acceder sin sesión.
-6. Acceso administrativo restringido por grupo.
-7. Header `Authorization` enviado solamente al Gateway.
-8. Catálogo, compra y biblioteca funcionando.
-9. Actualización de biblioteca después de una compra.
-10. Diferencia entre `401` y `403`.
-
-La validación criptográfica del JWT, la autorización del BFF, las rutas administrativas, CORS, los microservicios, los seeds y las pruebas directas del backend deben documentarse y demostrarse en el repositorio backend.
+Crea las ramas desde `dev` y abre el Pull Request con base `dev`.
 
 ## Licencia
 
-Proyecto académico para la asignatura DSY1107 Desarrollo Cloud Native I.
+Proyecto académico DUOC UC — DSY1107 Desarrollo Cloud Native I.
