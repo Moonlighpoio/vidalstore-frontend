@@ -22,6 +22,7 @@
           <th>Juego</th>
           <th>Fecha</th>
           <th>Estado</th>
+          <th>Revocada por</th>
           <th>Acción</th>
         </tr>
       </thead>
@@ -29,21 +30,28 @@
         @for (license of licenses(); track license.id) {
           <tr>
             <td><code>{{ license.id }}</code></td>
-            <td>{{ license.userId }}</td>
-            <td>{{ license.gameId }}</td>
-            <td>{{ license.purchasedAt | date: 'short' }}</td>
+            <td>{{ license.usuarioSub }}</td>
+            <td>{{ license.juegoId }}</td>
+            <td>{{ license.adquiridaEn | date: 'short' }}</td>
             <td>
-              @if (license.revoked) {
+              @if (license.estado === 'revocada') {
                 <span style="color: var(--danger); font-weight: 700;">REVOCADA</span>
               } @else {
                 <span style="color: var(--success); font-weight: 700;">ACTIVA</span>
               }
             </td>
             <td>
+              @if (license.estado === 'revocada') {
+                {{ license.revocadaPor || 'N/D' }} ({{ license.revocadaEn | date: 'short' }})
+              } @else {
+                —
+              }
+            </td>
+            <td>
               <button
                 type="button"
                 class="btn-danger"
-                [disabled]="license.revoked"
+                [disabled]="license.estado === 'revocada'"
                 (click)="revoke(license)"
               >
                 Revocar

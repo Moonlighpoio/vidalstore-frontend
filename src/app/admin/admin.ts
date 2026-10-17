@@ -47,17 +47,20 @@ export class Admin {
   }
 
   revoke(license: any): void {
-    if (license.revoked) return;
+    if (license.estado === 'revocada') return;
 
     this.adminService.revokeLicense(license.id).subscribe({
       next: () => {
         alert(
-          `Licencia revocada correctamente.\nJuego: ${license.gameId || 'N/D'}\nUsuario: ${license.userId || 'N/D'}`,
+          `Licencia revocada correctamente.\nJuego: ${license.juegoId || 'N/D'}\nUsuario: ${license.usuarioSub || 'N/D'}`,
         );
         this.loadData();
       },
       error: (err: any) => {
-        alert('Error al revocar la licencia: ' + (err?.error?.message || err?.message || 'Error desconocido'));
+        alert(
+          'Error al revocar la licencia: ' +
+            (err?.error?.message || err?.message || 'Error desconocido'),
+        );
       },
     });
   }
